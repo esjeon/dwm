@@ -2065,14 +2065,12 @@ togglebg(const Arg *arg) {
 	XWindowAttributes wa;
 
 	if(selmon->bgwin) {
-		/* TODO: manage the background window to the stack */
 		if(!XGetWindowAttributes(dpy, selmon->bgwin, &wa))
 			return;
 		manage(selmon->bgwin, &wa);
 		selmon->bgwin = 0;
 	} else if(selmon->sel) {
 		selmon->bgwin = selmon->sel->win;
-		/* TODO: center the window? */
 		resizeclient(selmon->sel, selmon->mx, selmon->my, selmon->mw, selmon->mh);
 		unmanage(selmon->sel, False);
 	}
