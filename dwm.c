@@ -235,6 +235,7 @@ static int xerrorstart(Display *dpy, XErrorEvent *ee);
 static void zoom(const Arg *arg);
 static void togglebg(const Arg *arg);
 static void kickbg(const Monitor *mon);
+
 /* variables */
 static const char broken[] = "broken";
 static char stext[256];
