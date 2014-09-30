@@ -129,7 +129,7 @@ struct Monitor {
 	Monitor *next;
 	Window barwin;
 	const Layout *lt[2];
-	Client *bg;
+	Window bgwin;
 };
 
 typedef struct {
@@ -233,7 +233,8 @@ static int xerror(Display *dpy, XErrorEvent *ee);
 static int xerrordummy(Display *dpy, XErrorEvent *ee);
 static int xerrorstart(Display *dpy, XErrorEvent *ee);
 static void zoom(const Arg *arg);
-
+static void togglebg(const Arg *arg);
+static void kickbg(const Monitor *mon);
 /* variables */
 static const char broken[] = "broken";
 static char stext[256];
@@ -1344,6 +1345,7 @@ restack(Monitor *m) {
 				wc.sibling = c->win;
 			}
 	}
+	kickbg(m);
 	XSync(dpy, False);
 	while(XCheckMaskEvent(dpy, EnterWindowMask, &ev));
 }
@@ -1720,6 +1722,7 @@ unmanage(Client *c, Bool destroyed) {
 
 void
 unmapnotify(XEvent *e) {
+	Monitor *m;
 	Client *c;
 	XUnmapEvent *ev = &e->xunmap;
 
@@ -1728,7 +1731,11 @@ unmapnotify(XEvent *e) {
 			setclientstate(c, WithdrawnState);
 		else
 			unmanage(c, False);
-	}
+	} else for(m = mons; m; m = m->next)
+		if(ev->window == m->bgwin) {
+			m->bgwin = 0;
+			break;
+		}
 }
 
 void
@@ -2055,28 +2062,28 @@ zoom(const Arg *arg) {
 
 void
 togglebg(const Arg *arg) {
-	XWindowChanges wc;
-	Client *c = selmon->bg;
+	XWindowAttributes wa;
 
-	if(c) {
-		/* TODO: remove the background window to the stack */
-		selmon->bg = NULL;
-	} else {
-		/* TODO: map the current window to background */
-		c = selmon->bg = selmon->sel;
-		if(!c) return;
-
-		wc.border_width = 0;
-		XConfigureWindow(dpy, c->win, CWBorderWidth, &wc);
+	if(selmon->bgwin) {
+		/* TODO: manage the background window to the stack */
+		if(!XGetWindowAttributes(dpy, selmon->bgwin, &wa))
+			return;
+		manage(selmon->bgwin, &wa);
+		selmon->bgwin = 0;
+	} else if(selmon->sel) {
+		selmon->bgwin = selmon->sel->win;
+		/* TODO: center the window? */
+		resizeclient(selmon->sel, selmon->mx, selmon->my, selmon->mw, selmon->mh);
+		unmanage(selmon->sel, False);
 	}
 }
 
 void
 kickbg(const Monitor *mon) {
-	XWindowChanges wc = { .stack_mode = BottomIf };
+	XWindowChanges wc = { .stack_mode = Below };
 
-	if(mon->bg)
-		XConfigureWindow(dpy, mon->bg->win, CWStackMode, &wc);
+	if(mon->bgwin)
+		XConfigureWindow(dpy, mon->bgwin, CWStackMode, &wc);
 }
 
 int
