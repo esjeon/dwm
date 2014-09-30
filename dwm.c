@@ -129,6 +129,7 @@ struct Monitor {
 	Monitor *next;
 	Window barwin;
 	const Layout *lt[2];
+	Client *bg;
 };
 
 typedef struct {
@@ -2050,6 +2051,32 @@ zoom(const Arg *arg) {
 		if(!c || !(c = nexttiled(c->next)))
 			return;
 	pop(c);
+}
+
+void
+togglebg(const Arg *arg) {
+	XWindowChanges wc;
+	Client *c = selmon->bg;
+
+	if(c) {
+		/* TODO: remove the background window to the stack */
+		selmon->bg = NULL;
+	} else {
+		/* TODO: map the current window to background */
+		c = selmon->bg = selmon->sel;
+		if(!c) return;
+
+		wc.border_width = 0;
+		XConfigureWindow(dpy, c->win, CWBorderWidth, &wc);
+	}
+}
+
+void
+kickbg(const Monitor *mon) {
+	XWindowChanges wc = { .stack_mode = BottomIf };
+
+	if(mon->bg)
+		XConfigureWindow(dpy, mon->bg->win, CWStackMode, &wc);
 }
 
 int
