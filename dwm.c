@@ -1081,6 +1081,10 @@ void
 maprequest(XEvent *e) {
 	static XWindowAttributes wa;
 	XMapRequestEvent *ev = &e->xmaprequest;
+	Monitor *m;
+
+	for(m = mons; m; m = m->next)
+		kickbg(m);
 
 	if(!XGetWindowAttributes(dpy, ev->window, &wa))
 		return;
