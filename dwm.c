@@ -2284,7 +2284,6 @@ updatesystray(void)
 				PropModeReplace, (unsigned char *)&netatom[NetSystemTrayOrientationHorz], 1);
 		XChangeProperty(dpy, systray->win, netatom[NetSystemTrayVisual], XA_VISUALID, 32,
 		                PropModeReplace, (unsigned char *)&drw->visual->visualid, 1);
-		//XChangeWindowAttributes(dpy, systray->win, CWEventMask|CWOverrideRedirect|CWBackPixel, &wa);
 		XMapRaised(dpy, systray->win);
 		XSetSelectionOwner(dpy, netatom[NetSystemTray], systray->win, CurrentTime);
 		if (XGetSelectionOwner(dpy, netatom[NetSystemTray]) == systray->win) {
@@ -2384,7 +2383,8 @@ wintoclient(Window w)
 }
 
 Client *
-wintosystrayicon(Window w) {
+wintosystrayicon(Window w)
+{
 	Client *i = NULL;
 
 	if (!showsystray || !w)
@@ -2447,7 +2447,8 @@ xerrorstart(Display *dpy, XErrorEvent *ee)
 }
 
 Monitor *
-systraytomon(Monitor *m) {
+systraytomon(Monitor *m)
+{
 	Monitor *t;
 	int i, n;
 	if(!systraypinning) {
